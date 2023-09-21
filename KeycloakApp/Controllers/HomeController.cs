@@ -20,9 +20,9 @@ namespace KeycloakApp.Controllers
         [Authorize]
         public ActionResult About()
         {
-            ViewBag.Message = "Your application description page.";
-
-            return View();
+            ViewBag.Message = "Claims : ";
+            var principle = User as ClaimsPrincipal;
+            return View(principle);
         }
 
         public ActionResult Contact()

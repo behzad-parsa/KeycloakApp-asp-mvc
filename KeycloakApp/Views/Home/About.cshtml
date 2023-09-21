@@ -8,17 +8,10 @@
 
     <div>
 
-
-        <dl>
             @foreach (var claim in Model.Claims)
             {
-                <dt>@claim.Type</dt>
-                <dd>@claim.Value</dd>
+                <p> <b>@claim.Type </b>  :  @claim.Value</p>
             }
-        </dl>
-
-        <hr />
-
 
     </div>
 
