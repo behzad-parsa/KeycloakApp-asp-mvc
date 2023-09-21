@@ -26,5 +26,9 @@ namespace KeycloakApp.Controllers
 
             return View();
         }
+        public ActionResult Callback()
+        {
+            return Content("");
+        }
     }
 }

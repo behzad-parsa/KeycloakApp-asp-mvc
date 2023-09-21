@@ -5,6 +5,7 @@ using Microsoft.Owin.Security.OpenIdConnect;
 using Owin;
 using System;
 using System.Threading.Tasks;
+using static System.Net.WebRequestMethods;
 
 [assembly: OwinStartup(typeof(KeycloakApp.Startup))]
 
@@ -26,55 +27,43 @@ namespace KeycloakApp
                 CookiePath = "/"
             });
 
+            app.SetDefaultSignInAsAuthenticationType("keycloak_sso_auth");
+
+            app.UseOpenIdConnectAuthentication(new OpenIdConnectAuthenticationOptions()
+            {
+                Authority = "https://YourKeycloakServerAddress.com/auth/realms/{realm_name}/",
+                ClientId = "test-client-id",
+                ClientSecret = "{ClientSecretValue}",
+                ResponseType = "code",
+                SaveTokens = true,
+                Scope = "openid",
+                RedirectUri = "http://localhost:33625/home/callback" ,
+                RedeemCode = true,
+                Notifications = new OpenIdConnectAuthenticationNotifications()
+                {
+
+                    RedirectToIdentityProvider = async (context) =>
+                    {
+                        context.ProtocolMessage.Parameters["code_challenge"] = "{code_challnege_value}";
+                        context.ProtocolMessage.Parameters["code_challenge_method"] = "plain";
+                    },
+                    AuthorizationCodeReceived = async (context) =>
+                    {
+                        context.TokenEndpointRequest.Parameters["code_verifier"] = "0KpkdgYxlnrYb9pJWCHhXQqirurQTPfX7McwyZ7drQQ";
+                    },
+                    TokenResponseReceived = async (responseToken) =>
+                    {
+                        responseToken.Request.Headers.Add("Authorization", new[] { responseToken.TokenEndpointResponse.AccessToken });
+                        responseToken.Request.Headers.Add("RefreshToken", new[] { responseToken.TokenEndpointResponse.RefreshToken });
+
+                        responseToken.SkipToNextMiddleware();
+                    },
+                }
+            });
+
 
         }
     }
 }
 
 
-
-
-
-
-
-
-//app.SetDefaultSignInAsAuthenticationType(persistentAuthType);
-//app.UseOpenIdConnectAuthentication(new OpenIdConnectAuthenticationOptions()
-//{
-//    AuthenticationType = "KeycloakSSO",
-//    Authority = "https://sso.karafariniomid.ir/auth/realms/master/",
-//    ClientId = "kms-client-id",
-//    ClientSecret = "wctgLSoVLvi2x8cXGTSxZlHBohYSJCIu",
-//    SignInAsAuthenticationType = persistentAuthType,
-//    ResponseType = "code",
-//    SaveTokens = true,
-//    Scope = "openid",
-//    RedirectUri = WebConfigValues.SecurityRoot + "/api/sso/KeycloakSignIn",
-//    RedeemCode = true,
-//    Notifications = new OpenIdConnectAuthenticationNotifications()
-//    {
-
-//        RedirectToIdentityProvider = async (context) =>
-//        {
-//            context.ProtocolMessage.Parameters["code_challenge"] = "0KpkdgYxlnrYb9pJWCHhXQqirurQTPfX7McwyZ7drQQ";
-//            context.ProtocolMessage.Parameters["code_challenge_method"] = "plain";
-//        },
-//        AuthorizationCodeReceived = async (context) =>
-//        {
-//            context.TokenEndpointRequest.Parameters["code_verifier"] = "0KpkdgYxlnrYb9pJWCHhXQqirurQTPfX7McwyZ7drQQ";
-//        },
-//        TokenResponseReceived = async (responseToken) =>
-//        {
-//            responseToken.Request.Headers.Add("Authorization", new[] { responseToken.TokenEndpointResponse.AccessToken });
-//            responseToken.Request.Headers.Add("RefreshToken", new[] { responseToken.TokenEndpointResponse.RefreshToken });
-
-//            responseToken.SkipToNextMiddleware();
-//        },
-//        SecurityTokenReceived = async (param) =>
-//        {
-//        },
-//        MessageReceived = async (request) =>
-//        {
-//        },
-//    },
-//});
