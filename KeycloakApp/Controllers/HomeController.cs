@@ -53,6 +53,12 @@ namespace KeycloakApp.Controllers
             return RedirectToAction("About");
         }
 
+        public ActionResult SignOut()
+        {
+            Request.GetOwinContext().Authentication.SignOut("keycloak_sso_auth");
+            //Redirect to keycloakAddress.com/realms/{realm_name}/logout
+            return RedirectToAction("Index");
+        }
 
     }
 }
